@@ -1,0 +1,142 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2638
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 1.Creating and Loading data for  airports_mod.dat \
+\
+create table airport(\
+airport_id int,\
+name string,\
+city string,\
+country string,\
+iata string,\
+icao string,\
+latitude double,\
+longitude double,\
+altitude int,\
+timezone double,\
+dst string,\
+tz string)\
+row format delimited\
+fields terminated by ','\
+stored as textfile;\
+\
+load data local inpath 'airports_mod.dat' into table airport;\
+\
+\
+2.Creating and Loading data for  Final_airlines\
+\
+create table finalairlines(\
+airlineID int, \
+name string,\
+alias string,\
+iata string, \
+icao string,\
+callsign string,\
+country string,\
+active string)\
+row format delimited\
+fields terminated by ","\
+stored as textfile;\
+\
+load data local inpath "Final_airlines" into table finalairlines;\
+\
+\
+3.Creating and Loading data for routes.dat\
+\
+create table routes(\
+airline string,\
+airlineID int,\
+source string,\
+sourceID int,\
+destination string,\
+destinationID int,\
+codeshare string,\
+stops int,\
+equipment string)\
+row format delimited fields terminated by ","\
+stored as textfile;\
+\
+load data local inpath "routes.dat"into table routes;\
+\
+\
+Problem Statemet A\
+\
+select * \
+from airport\
+where trim(upper(country))='INDIA';\
+\
+#trim - to remove spaces\
+#upper - to deal with diff cases,(upper or lower)\
+\
+\
+\
+Problem Statement B\
+\
+select distinct(a.airlineid),a.name\
+from finalairlines a join routes on \
+a.airlineid=routes.airlineid \
+where stops=0;\
+\
+\
+Problem Statement C\
+\
+select distinct a.airlineid, a.name\
+from finalairlines a join routes r\
+on \
+a.airlineid = r.airlineid \
+where \
+trim(upper(codeshare)) = 'Y';\
+\
+\
+\
+Problem Statement D\
+\
+select b.country, count(b.airport_id) as cnt from airport b group by b.country having cnt in (\
+select max(total) from\
+(select count(airport_id) as total from airport group by country) abc);\
+\
+#where clause -  filters raw data\
+#having clause - filters aggregate data; here cnt is agg data\
+\
+\
+\
+Problem Statement E \
+\
+#(airlines flying in or out of United States)\
+#joining all three tables for this query\
+\
+\
+select distinct a.airlineid, a.name\
+from \
+finalairlines a join routes r\
+on \
+a.airlineID = r.airlineID\
+\
+join\
+\
+airport ar1\
+on\
+r.sourceID = ar1.airport_id\
+\
+join\
+\
+airport ar2\
+on\
+r.destinationID = ar2.airport_id\
+\
+where\
+\
+trim(upper(ar1.country)) = 'UNITED STATES' or\
+trim(upper(ar2.country)) = 'UNITED STATES' \
+;\
+\
+\
+\
+\
+\
+\
+}
